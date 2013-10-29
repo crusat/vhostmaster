@@ -112,7 +112,8 @@ function HostAddCtrl($scope, $http, $location) {
     // references
     $scope.engines = [
         {id: 'none', title: 'Отсутствует'},
-        {id: 'joomla', title: 'Joomla'}
+        {id: 'joomla', title: 'Joomla'},
+        {id: 'opencart', title: 'OpenCart 1.5.6'}
     ];
     // default
     $scope.user = 'www-data';

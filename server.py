@@ -19,6 +19,7 @@ import urllib
 class myHandler(BaseHTTPRequestHandler):
 
     LAST_JOOMLA_DOWNLOAD_URL = 'http://joomlacode.org/gf/download/frsrelease/18622/83487/Joomla_3.1.5-Stable-Full_Package.zip'
+    ENGINE_DOWNLOAD_URL_OPENCART_LAST = 'http://www.opencart.com/index.php?route=download/download/download&download_id=32'
 
     def getEtcHosts(self):
         f = open("/etc/hosts", "r")
@@ -240,12 +241,38 @@ class myHandler(BaseHTTPRequestHandler):
 
     def installEngine(self, root_dir, public_dir, engine):
         if engine == 'joomla':
-            urllib.urlretrieve(self.LAST_JOOMLA_DOWNLOAD_URL, os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip")
+            if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip"):
+                urllib.urlretrieve(self.LAST_JOOMLA_DOWNLOAD_URL, os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip")
             with zipfile.ZipFile(os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip", "r") as z:
                 z.extractall(root_dir + public_dir + os.sep)
+        elif engine == 'opencart':
+            if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "opencart.zip"):
+                urllib.urlretrieve(self.ENGINE_DOWNLOAD_URL_OPENCART_LAST, os.curdir + os.sep + 'tmp' + os.sep + "opencart.zip")
+            if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "opencart"):
+                with zipfile.ZipFile(os.curdir + os.sep + 'tmp' + os.sep + "opencart.zip", "r") as z:
+                    z.extractall(os.curdir + os.sep + 'tmp' + os.sep + "opencart")
+            os.rmdir(root_dir + public_dir + os.sep)
+            shutil.copytree(os.curdir + os.sep + 'tmp' + os.sep + "opencart" + os.sep + "opencart-1.5.6" + os.sep + "upload",
+                            root_dir + public_dir + os.sep)
+            # specially for opencart configs
+            print root_dir + public_dir + os.sep + "config-dist.php", root_dir + public_dir + os.sep + "config.php"
+            os.rename(root_dir + public_dir + os.sep + "config-dist.php",
+                      root_dir + public_dir + os.sep + "config.php")
+            os.rename(root_dir + public_dir + os.sep + "admin" + os.sep + "config-dist.php",
+                      root_dir + public_dir + os.sep + "admin" + os.sep + "config.php")
         else:
             shutil.copyfile(os.curdir + os.sep + 'engines' + os.sep + 'none' + os.sep + 'index.html',
                             root_dir + public_dir + os.sep + 'index.html')
+
+    def chowntree(self, path, uid, gid):
+        os.chown(path, uid, gid)
+        for item in os.listdir(path):
+            itempath = os.path.join(path, item)
+            if os.path.isfile(itempath):
+                os.chown(itempath, uid, gid)
+            elif os.path.isdir(itempath):
+                os.chown(itempath, uid, gid)
+                self.chowntree(itempath, uid, gid)
 
 
     def addHost(self, server_name, root_dir, public_dir, user, engine):
@@ -254,9 +281,8 @@ class myHandler(BaseHTTPRequestHandler):
         self.powerDirCreate(root_dir + public_dir)
         uid = getpwnam(user)[2]
         gid = getpwnam(user)[3]
-        os.chown(root_dir, uid, gid)
-        os.chown(root_dir + public_dir, uid, gid)
         self.installEngine(root_dir, public_dir, engine)
+        self.chowntree(root_dir, uid, gid)
         self.addConfig(server_name, root_dir, public_dir, engine)
         self.nginxRestart()
         return
