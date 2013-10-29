@@ -3,10 +3,9 @@
 """
 Must be started from root
 """
-import SocketServer
-import SimpleHTTPServer
 import re
 import shutil
+import zipfile
 
 PORT = 4242
 
@@ -242,6 +241,8 @@ class myHandler(BaseHTTPRequestHandler):
     def installEngine(self, root_dir, public_dir, engine):
         if engine == 'joomla':
             urllib.urlretrieve(self.LAST_JOOMLA_DOWNLOAD_URL, os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip")
+            with zipfile.ZipFile(os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip", "r") as z:
+                z.extractall(root_dir + public_dir + os.sep)
         else:
             shutil.copyfile(os.curdir + os.sep + 'engines' + os.sep + 'none' + os.sep + 'index.html',
                             root_dir + public_dir + os.sep + 'index.html')
@@ -294,8 +295,8 @@ class myHandler(BaseHTTPRequestHandler):
             f = open(config_filename, 'r')
             s = f.readline()
             while s:
-                if len(s) > 0 and s[0] != '#':
-                    m = re.match(r"\s*root\s+([^;]*);", s)
+                if len(s) > 0:
+                    m = re.match(r"#\s*vhostmaster_root_dir\s+([^;]*);", s)
                     if m is not None:
                         directory = m.group(1)
                 s = f.readline()

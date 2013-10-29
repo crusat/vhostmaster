@@ -146,7 +146,7 @@ function HostAddCtrl($scope, $http, $location) {
                 root_dir: $scope.root_dir,
                 user: $scope.user,
                 public_dir: $scope.public_dir,
-                engine: $scope.engine
+                engine: $scope.engine.id
             }),
             headers: {'Content-Type': 'application/json'},
             url: '/api/addhost'
