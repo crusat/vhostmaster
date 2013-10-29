@@ -109,11 +109,18 @@ function LeftMenuCtrl($scope) {
 }
 
 function HostAddCtrl($scope, $http, $location) {
+    // references
+    $scope.engines = [
+        {id: 'none', title: 'Отсутствует'},
+        {id: 'joomla', title: 'Joomla'}
+    ];
+    // default
     $scope.user = 'www-data';
     $scope.server_name = 'example.local';
     $scope.root_dir = '/var/www/example.local';
     $scope.directory_as_server_name = true;
     $scope.public_dir = '/www';
+    $scope.engine = $scope.engines[0];
 
     var directorAsServerName = function() {
         if ($scope.directory_as_server_name) {

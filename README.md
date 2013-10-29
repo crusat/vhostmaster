@@ -9,5 +9,12 @@ Must be started as root.
 Change list
 ===========
 
+0.2
+- Added engines
+
 0.1
 - Init
+- Add host
+- Delete host
+- Only nginx
+- Only russian language

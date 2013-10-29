@@ -14,9 +14,12 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import os
 from json import dumps, loads
 from pwd import getpwnam
+import urllib
 
 
 class myHandler(BaseHTTPRequestHandler):
+
+    LAST_JOOMLA_DOWNLOAD_URL = 'http://joomlacode.org/gf/download/frsrelease/18622/83487/Joomla_3.1.5-Stable-Full_Package.zip'
 
     def getEtcHosts(self):
         f = open("/etc/hosts", "r")
@@ -97,6 +100,18 @@ class myHandler(BaseHTTPRequestHandler):
             block -= 1
         return '\n'.join(''.join(data).splitlines()[-window:])
 
+    def nginxRestart(self):
+        bashCommand = 'sudo service nginx restart'
+        import subprocess
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        return process.communicate()[0]
+
+    def phpfpmRestart(self):
+        bashCommand = 'sudo service php5-fpm restart'
+        import subprocess
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        return process.communicate()[0]
+
     #Handler for the GET requests
     def do_GET(self):
         try:
@@ -127,10 +142,7 @@ class myHandler(BaseHTTPRequestHandler):
                 self.wfile.write(dumps(log))
                 return
             if self.path == "/api/restart/nginx":
-                bashCommand = 'sudo service nginx restart'
-                import subprocess
-                process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-                output = process.communicate()[0]
+                output = self.nginxRestart()
                 mimetype = 'application/json'
                 self.send_response(200)
                 self.send_header('Content-type', mimetype)
@@ -140,10 +152,7 @@ class myHandler(BaseHTTPRequestHandler):
                 }))
                 return
             if self.path == "/api/restart/php-fpm":
-                bashCommand = 'sudo service php5-fpm restart'
-                import subprocess
-                process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-                output = process.communicate()[0]
+                output = self.phpfpmRestart()
                 mimetype = 'application/json'
                 self.send_response(200)
                 self.send_header('Content-type', mimetype)
@@ -217,7 +226,7 @@ class myHandler(BaseHTTPRequestHandler):
             pass
         return
 
-    def addConfig(self, server_name, root_dir, engine):
+    def addConfig(self, server_name, root_dir, public_dir, engine):
         source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'joomla.conf'
         dest_config_filename = '/etc/nginx/sites-available/'+server_name
         #shutil.copy2(source_config_filename, dest_config_filename)
@@ -225,12 +234,20 @@ class myHandler(BaseHTTPRequestHandler):
         for line in open(source_config_filename):
            line = line.replace("{{server_name}}", server_name)
            line = line.replace("{{root_dir}}", root_dir)
-           o.write(line + "\n")
+           line = line.replace("{{public_dir}}", public_dir)
+           o.write(line)
         o.close()
         os.symlink('/etc/nginx/sites-available/'+server_name, '/etc/nginx/sites-enabled/'+server_name)
 
+    def installEngine(self, root_dir, public_dir, engine):
+        if engine == 'joomla':
+            urllib.urlretrieve(self.LAST_JOOMLA_DOWNLOAD_URL, os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip")
+        else:
+            shutil.copyfile(os.curdir + os.sep + 'engines' + os.sep + 'none' + os.sep + 'index.html',
+                            root_dir + public_dir + os.sep + 'index.html')
 
-    def addHost(self, server_name, root_dir, public_dir, user):
+
+    def addHost(self, server_name, root_dir, public_dir, user, engine):
         self.addHostToEtcHosts(server_name)
         self.powerDirCreate(root_dir)
         self.powerDirCreate(root_dir + public_dir)
@@ -238,7 +255,9 @@ class myHandler(BaseHTTPRequestHandler):
         gid = getpwnam(user)[3]
         os.chown(root_dir, uid, gid)
         os.chown(root_dir + public_dir, uid, gid)
-        self.addConfig(server_name, root_dir, None)
+        self.installEngine(root_dir, public_dir, engine)
+        self.addConfig(server_name, root_dir, public_dir, engine)
+        self.nginxRestart()
         return
 
     def delHostToEtcHosts(self, server_name):
@@ -258,7 +277,6 @@ class myHandler(BaseHTTPRequestHandler):
     def delConfig(self, server_name):
         config_filename = '/etc/nginx/sites-available/'+server_name
         config_symlink = '/etc/nginx/sites-enabled/'+server_name
-        #shutil.copy2(source_config_filename, dest_config_filename)
         try:
             os.remove(config_filename)
         except OSError:
@@ -304,7 +322,7 @@ class myHandler(BaseHTTPRequestHandler):
             if self.path == "/api/addhost":
                 output = {"error": 0}
                 data = loads(post_body)
-                self.addHost(data['server_name'], data['root_dir'], data['public_dir'], data['user'])
+                self.addHost(data['server_name'], data['root_dir'], data['public_dir'], data['user'], data['engine'])
                 # response
                 mimetype = 'application/json'
                 self.send_response(200)

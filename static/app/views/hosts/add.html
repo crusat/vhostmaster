@@ -34,10 +34,7 @@
         <label class="control-label" for="engine">Развернуть движок</label>
 
         <div class="controls">
-            <select ng-model="engine" id="engine">
-                <option value="none">Никакой</option>
-                <option value="joomla">Joomla</option>
-            </select>
+            <select ng-model="engine" id="engine" ng-options="a as a.title for a in engines"></select>
         </div>
     </div>
     <div class="control-group">
