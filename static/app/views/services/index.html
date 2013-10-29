@@ -1,0 +1,10 @@
+<h1>Сервисы</h1>
+
+<p>Здесь вы можете управлять сервисами</p>
+
+<button class="btn btn-primary" ng-click="restartNginx()">Перезагрузить Nginx</button>
+<button class="btn btn-primary" ng-click="restartPhpFpm()">Перезагрузить php5-fpm</button>
+
+<pre ng-show="output">
+    {{ output }}
+</pre>

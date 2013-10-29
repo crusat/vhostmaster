@@ -1,0 +1,22 @@
+<h1>Доступные хосты на вашем компьютере</h1>
+
+<table class="table">
+    <tr>
+        <th>Имя хоста</th>
+        <th>Веб-сервер</th>
+        <th>Удалить</th>
+    </tr>
+    <tr ng-repeat="host in hosts">
+        <td>{{ host.server_name }}
+            <a href="http://{{ host.server_name }}" target="_blank" title="Открыть в новой вкладке">
+                <i class="icon-share"></i>
+            </a>
+        </td>
+        <td>{{ host.webserver }}</td>
+        <td>
+            <a href="/hosts/delete/{{ host.server_name }}">
+                <i class="icon-remove"></i> Удалить хост
+            </a>
+        </td>
+    </tr>
+</table>

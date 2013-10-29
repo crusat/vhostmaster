@@ -1,0 +1,46 @@
+<h1>Добавить хост</h1>
+
+<form class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label" for="server_name">Название хоста</label>
+
+        <div class="controls">
+            <input type="text" ng-model="server_name" id="server_name" placeholder="Название хоста">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="root_dir">Корневая директория</label>
+
+        <div class="controls">
+            <input type="text" ng-model="root_dir" id="root_dir" placeholder="Корневая директория">
+            <label class="checkbox"><input type="checkbox" ng-model="directory_as_server_name"> Совпадает с названием хоста</label>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="public_dir">Публичная директория</label>
+
+        <div class="controls">
+            <div class="muted">{{ root_dir }} <input type="text" ng-model="public_dir" id="public_dir" placeholder="Публичная директория"></div>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="user">Пользователь</label>
+
+        <div class="controls">
+            <input type="text" ng-model="user" id="user" placeholder="Пользователь">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="engine">Развернуть движок</label>
+
+        <div class="controls">
+            <select ng-model="engine" id="engine">
+                <option value="none">Никакой</option>
+                <option value="joomla">Joomla</option>
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <button ng-click="addHost()" class="btn btn-primary">Добавить хост</button>
+    </div>
+</form>
