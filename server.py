@@ -20,6 +20,7 @@ class myHandler(BaseHTTPRequestHandler):
 
     LAST_JOOMLA_DOWNLOAD_URL = 'http://joomlacode.org/gf/download/frsrelease/18622/83487/Joomla_3.1.5-Stable-Full_Package.zip'
     ENGINE_DOWNLOAD_URL_OPENCART_LAST = 'http://www.opencart.com/index.php?route=download/download/download&download_id=32'
+    ENGINE_DOWNLOAD_URL_BITRIX_SMALLBUSINESS_LAST = 'http://www.1c-bitrix.ru/download/small_business_encode_php5.zip'
 
     def getEtcHosts(self):
         f = open("/etc/hosts", "r")
@@ -227,7 +228,12 @@ class myHandler(BaseHTTPRequestHandler):
         return
 
     def addConfig(self, server_name, root_dir, public_dir, engine):
-        source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'joomla.conf'
+        if engine == 'joomla' or engine == 'opencart':
+            source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'default_php_site.conf'
+        elif engine == 'bitrix_smallbusiness':
+            source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'bitrix.conf'
+        else:
+            source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'none.conf'
         dest_config_filename = '/etc/nginx/sites-available/'+server_name
         #shutil.copy2(source_config_filename, dest_config_filename)
         o = open(dest_config_filename, "a")
@@ -260,6 +266,21 @@ class myHandler(BaseHTTPRequestHandler):
                       root_dir + public_dir + os.sep + "config.php")
             os.rename(root_dir + public_dir + os.sep + "admin" + os.sep + "config-dist.php",
                       root_dir + public_dir + os.sep + "admin" + os.sep + "config.php")
+        elif engine == 'bitrix_smallbusiness':
+            if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "bitrix_smallbusiness.zip"):
+                urllib.urlretrieve(self.ENGINE_DOWNLOAD_URL_BITRIX_SMALLBUSINESS_LAST, os.curdir + os.sep + 'tmp' + os.sep + "bitrix_smallbusiness.zip")
+            if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "bitrix_smallbusiness"):
+                with zipfile.ZipFile(os.curdir + os.sep + 'tmp' + os.sep + "bitrix_smallbusiness.zip", "r") as z:
+                    z.extractall(os.curdir + os.sep + 'tmp' + os.sep + "bitrix_smallbusiness")
+            os.rmdir(root_dir + public_dir + os.sep)
+            shutil.copytree(os.curdir + os.sep + 'tmp' + os.sep + "bitrix_smallbusiness",
+                            root_dir + public_dir + os.sep)
+            ## specially for opencart configs
+            #print root_dir + public_dir + os.sep + "config-dist.php", root_dir + public_dir + os.sep + "config.php"
+            #os.rename(root_dir + public_dir + os.sep + "config-dist.php",
+            #          root_dir + public_dir + os.sep + "config.php")
+            #os.rename(root_dir + public_dir + os.sep + "admin" + os.sep + "config-dist.php",
+            #          root_dir + public_dir + os.sep + "admin" + os.sep + "config.php")
         else:
             shutil.copyfile(os.curdir + os.sep + 'engines' + os.sep + 'none' + os.sep + 'index.html',
                             root_dir + public_dir + os.sep + 'index.html')

@@ -113,7 +113,8 @@ function HostAddCtrl($scope, $http, $location) {
     $scope.engines = [
         {id: 'none', title: 'Отсутствует'},
         {id: 'joomla', title: 'Joomla'},
-        {id: 'opencart', title: 'OpenCart 1.5.6'}
+        {id: 'opencart', title: 'OpenCart 1.5.6'},
+        {id: 'bitrix_smallbusiness', title: '1C-Bitrix: Малый Бизнес'}
     ];
     // default
     $scope.user = 'www-data';
