@@ -114,7 +114,8 @@ function HostAddCtrl($scope, $http, $location) {
         {id: 'none', title: 'Отсутствует'},
         {id: 'joomla', title: 'Joomla'},
         {id: 'opencart', title: 'OpenCart 1.5.6'},
-        {id: 'bitrix_smallbusiness', title: '1C-Bitrix: Малый Бизнес'}
+        {id: 'bitrix_smallbusiness', title: '1C-Bitrix: Малый Бизнес'},
+        {id: 'phpmyadmin', title: 'PhpMyAdmin 4.0.8'}
     ];
     // default
     $scope.user = 'www-data';

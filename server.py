@@ -228,7 +228,7 @@ class myHandler(BaseHTTPRequestHandler):
         return
 
     def addConfig(self, server_name, root_dir, public_dir, engine):
-        if engine == 'joomla' or engine == 'opencart':
+        if engine == 'joomla' or engine == 'opencart' or engine == 'phpmyadmin':
             source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'default_php_site.conf'
         elif engine == 'bitrix_smallbusiness':
             source_config_filename = os.curdir + os.sep + 'configs' + os.sep + 'nginx' + os.sep + 'bitrix.conf'
@@ -251,6 +251,14 @@ class myHandler(BaseHTTPRequestHandler):
                 urllib.urlretrieve(self.LAST_JOOMLA_DOWNLOAD_URL, os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip")
             with zipfile.ZipFile(os.curdir + os.sep + 'tmp' + os.sep + "joomla.zip", "r") as z:
                 z.extractall(root_dir + public_dir + os.sep)
+                #phpMyAdmin-4.0.8-all-languages
+        elif engine == 'phpmyadmin':
+            if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "phpmyadmin"):
+                with zipfile.ZipFile(os.curdir + os.sep + 'engines' + os.sep + "phpmyadmin" + os.sep + "phpMyAdmin-4.0.8-all-languages.zip", "r") as z:
+                    z.extractall(os.curdir + os.sep + 'tmp' + os.sep + "phpmyadmin")
+            os.rmdir(root_dir + public_dir + os.sep)
+            shutil.copytree(os.curdir + os.sep + 'tmp' + os.sep + "phpmyadmin" + os.sep + "phpMyAdmin-4.0.8-all-languages",
+                            root_dir + public_dir + os.sep)
         elif engine == 'opencart':
             if not os.path.exists(os.curdir + os.sep + 'tmp' + os.sep + "opencart.zip"):
                 urllib.urlretrieve(self.ENGINE_DOWNLOAD_URL_OPENCART_LAST, os.curdir + os.sep + 'tmp' + os.sep + "opencart.zip")
@@ -261,7 +269,7 @@ class myHandler(BaseHTTPRequestHandler):
             shutil.copytree(os.curdir + os.sep + 'tmp' + os.sep + "opencart" + os.sep + "opencart-1.5.6" + os.sep + "upload",
                             root_dir + public_dir + os.sep)
             # specially for opencart configs
-            print root_dir + public_dir + os.sep + "config-dist.php", root_dir + public_dir + os.sep + "config.php"
+            #print root_dir + public_dir + os.sep + "config-dist.php", root_dir + public_dir + os.sep + "config.php"
             os.rename(root_dir + public_dir + os.sep + "config-dist.php",
                       root_dir + public_dir + os.sep + "config.php")
             os.rename(root_dir + public_dir + os.sep + "admin" + os.sep + "config-dist.php",
