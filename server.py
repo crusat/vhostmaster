@@ -28,11 +28,11 @@ class myHandler(BaseHTTPRequestHandler):
         s = f.readline()
         while s:
             if len(s) > 0 and s[0] != '#':
-                m = re.match(r"(\s*127\.0\.0\.1)\s+(.+)", s)
+                m = re.match(r"(\s*127\.0\.0\.1)\s+(.+)$", s)
                 if m is not None:
                     result.append({
                     "address": m.group(1),
-                    "server_name": m.group(2),
+                    "server_name": m.group(2).strip(),
                     "webserver": '-'
                     })
             s = f.readline()
@@ -51,7 +51,7 @@ class myHandler(BaseHTTPRequestHandler):
             f = open(NGINX_CONFIG_DIRECTORY + config, "r")
             s = f.readline()
             while s:
-                m = re.match(r"\s*server_name\s+(.+);", s)
+                m = re.match(r"\s*server_name\s+([^;]*);", s)
                 if m is not None:
                     result.append({
                         "config_name": config,
@@ -64,11 +64,12 @@ class myHandler(BaseHTTPRequestHandler):
     def getHosts(self):
         etc_hosts = self.getEtcHosts()
         nginx_hosts = self.getNginxHosts()
+        print etc_hosts, nginx_hosts
         for i in range(len(etc_hosts)):
-            for nginx_host in nginx_hosts:
-                if etc_hosts[i]["server_name"] == nginx_host["server_name"]:
+            for j in range(len(nginx_hosts)):
+                if etc_hosts[i]["server_name"] == nginx_hosts[j]["server_name"]:
                     etc_hosts[i]['webserver'] = 'nginx'
-                    etc_hosts[i]['config_name'] = nginx_host['config_name']
+                    etc_hosts[i]['config_name'] = nginx_hosts[j]['config_name']
         return etc_hosts
 
     def getLog(self, path):
